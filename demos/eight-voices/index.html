@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eight Voices, One Copper: how it works - Next Sound Lab</title>
+<meta name="description" content="How the Next Sound Lab plays eight sampled voices: the Copper writes DACs B and C once a scan line, the DMA plays a centre channel to A and D, the FPGA adds them, and two line interrupts mix each half of the frame in Z80N.">
+<meta property="og:title" content="Eight Voices, One Copper: how it works - Next Sound Lab">
+<meta property="og:description" content="The Copper writes DACs B and C once a scan line, the DMA plays a centre channel to A and D, the FPGA adds them, and two line interrupts mix each half of the frame in Z80N.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mikeynma.github.io/next-sound-lab/demos/eight-voices/">
+<meta property="og:image" content="https://mikeynma.github.io/next-sound-lab/share.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Next Sound Lab: the chrome SOUNDS LAB logo over a plasma and shiny bobs, sampled music for the ZX Spectrum Next">
+<link rel="canonical" href="https://mikeynma.github.io/next-sound-lab/demos/eight-voices/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mikeynma.github.io/next-sound-lab/share.png">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="../../favicon-32.png" type="image/png">
+<link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+<link rel="preload" href="../../fonts/geist-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../../site.css">
+</head>
+<body>
+<div class="tape" aria-hidden="true"></div>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="../../" aria-label="Next Sound Lab, the front page"><img src="../../icon.png" width="32" height="32" alt=""><span>Next Sound Lab</span></a>
+    <nav aria-label="Sections"><a href="#how">How it works</a><a href="#screens">Screens</a><a href="#download">Download</a><a href="../../#demos">The demo</a></nav>
+  </div>
+</header>
+
+<main>
+<section class="hero wrap">
+  <div class="hero-text">
+    <p class="badges"><span class="badge mnext">Next</span><span class="badge m1mb">1MB</span><span class="date">13 November 2026</span></p>
+    <h1 class="title">Eight Voices, One Copper</h1>
+    <p class="lead">Eight sampled voices on the ZX Spectrum Next, played by the Copper one byte a scan line, with the DMA on two more DACs. An 80-bar song of our own and a 90s-style demo around it.</p>
+    <p>This page is for a Next owner who knows a bit of Z80. It says how the sound gets out with no CPU time spent on it, how the mixer fills it twice a frame, and how the demo shares the same Copper list. Every number here comes from the source or from a run in an emulator.</p>
+    <div class="listen"><p><small>the song once through, recorded from the emulated Next, 2 min 36 s</small><br><audio controls preload="none" style="width:100%;max-width:440px" src="../../audio/eight-voices.mp3"></audio></p></div>
+    <div class="actions"><a class="btn" href="../../files/sounds-lab.nex" download>Download sounds-lab.nex</a><a class="btn btn-ghost" href="../../#watch">Watch the whole demo</a></div>
+  </div>
+  <figure class="hero-shot">
+    <a class="shot" href="../../shots/climax-logo.png" data-caption="The climax: the logo with 48 bobs flying round it, over copper bars, with the oscilloscope and the scroller."><img src="../../shots/climax-logo.png" width="640" height="512" alt="The chrome SOUNDS LAB logo over copper bars with dozens of shiny coloured bobs around it, the oscilloscope and a rainbow scroller"></a>
+    <figcaption>The climax: the logo with 48 bobs flying round it, over copper bars, with the oscilloscope and the scroller.</figcaption>
+  </figure>
+</section>
+
+<section id="how" class="wrap">
+  <p class="eyebrow">How it works</p>
+  <div class="tech">
+    <div class="tech-text">
+      <h2>The Copper writes the DACs</h2>
+      <p>The Next's Copper is a little co-processor that waits for a scan line and writes Next registers. Two of those registers are DACs: <code>$2C</code> is DAC B, on the left, and <code>$2E</code> is DAC C, on the right. So a Copper list of <b>a WAIT and two MOVEs for every line</b> plays a stereo sample a line, and the CPU never touches the output.</p>
+      <p>A 50 Hz frame has 311 lines, so that is 933 of the Copper's 1,024 instructions. The demo adds one more MOVE on 89 of the lines (below), and a final WAIT for line 511, which never comes, ends the list: 1,023 in all. The list starts again from the top at every frame.</p>
+
+      <h2>The DMA, and the FPGA adds them up</h2>
+      <p>The Next has four 8-bit DACs: A and B on the left, C and D on the right. The FPGA adds each pair, A + B and C + D, into 9 bits before the AY chips go on top. So two streams written to different DACs on one side mix in hardware, with no clipping and no CPU.</p>
+      <p>That gives a third bus for free. The zxnDMA plays a <b>centre bus</b> to port <code>$DF</code>, which writes DACs A and D together, in burst mode, so the CPU keeps running between bytes. Each of the three buses has its own full 8 bits.</p>
+      <figure class="diagram">
+        <svg viewBox="0 0 760 280" role="img" aria-labelledby="dg-t">
+          <title id="dg-t">The Z80N mixer fills a left, a right and a centre bus. The Copper writes left to DAC B and right to DAC C each scan line. The DMA writes the centre to DACs A and D. The FPGA adds A and B for the left output, and C and D for the right.</title>
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b3b3cc"/></marker>
+            <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#3ddc6a"/></marker>
+            <marker id="aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ffae2a"/></marker>
+          </defs>
+          <g font-family="Geist, system-ui, sans-serif" font-size="14" fill="#f1f1f6" text-anchor="middle">
+            <g fill="#13132a" stroke="#2b2b55" stroke-width="1.5">
+              <rect x="6" y="96" width="150" height="88" rx="4"/>
+              <rect x="214" y="22" width="190" height="96" rx="4"/>
+              <rect x="214" y="162" width="190" height="96" rx="4"/>
+              <rect x="470" y="22" width="76" height="36" rx="4"/>
+              <rect x="470" y="82" width="76" height="36" rx="4"/>
+              <rect x="470" y="162" width="76" height="36" rx="4"/>
+              <rect x="470" y="222" width="76" height="36" rx="4"/>
+              <rect x="604" y="40" width="150" height="60" rx="4"/>
+              <rect x="604" y="180" width="150" height="60" rx="4"/>
+            </g>
+            <text x="81" y="128" font-weight="700">Z80N mixer</text>
+            <text x="81" y="148" fill="#b3b3cc" font-size="12">8 voices, mixed</text>
+            <text x="81" y="164" fill="#b3b3cc" font-size="12">twice a frame</text>
+            <text x="309" y="50" font-weight="700">Copper</text>
+            <text x="309" y="72" fill="#b3b3cc" font-size="12">every scan line:</text>
+            <text x="309" y="88" fill="#b3b3cc" font-size="12">WAIT, MOVE $2C, MOVE $2E</text>
+            <text x="309" y="104" fill="#b3b3cc" font-size="12">left and right buses</text>
+            <text x="309" y="190" font-weight="700">zxnDMA</text>
+            <text x="309" y="212" fill="#b3b3cc" font-size="12">burst, prescaler 57</text>
+            <text x="309" y="228" fill="#b3b3cc" font-size="12">to port $DF</text>
+            <text x="309" y="244" fill="#b3b3cc" font-size="12">the centre bus</text>
+            <text x="508" y="45">DAC B</text>
+            <text x="508" y="105">DAC C</text>
+            <text x="508" y="185">DAC A</text>
+            <text x="508" y="245">DAC D</text>
+            <text x="679" y="66" font-weight="700">Left</text>
+            <text x="679" y="86" fill="#b3b3cc" font-size="12">FPGA adds A + B</text>
+            <text x="679" y="206" font-weight="700">Right</text>
+            <text x="679" y="226" fill="#b3b3cc" font-size="12">FPGA adds C + D</text>
+            <g fill="none" stroke-width="2">
+              <path d="M156 124 L212 80" stroke="#b3b3cc" marker-end="url(#ah)"/>
+              <path d="M156 156 L212 200" stroke="#b3b3cc" marker-end="url(#ah)"/>
+              <path d="M404 50 L468 40" stroke="#3ddc6a" marker-end="url(#ag)"/>
+              <path d="M404 90 L468 100" stroke="#ffae2a" marker-end="url(#aa)"/>
+              <path d="M404 200 L468 180" stroke="#3ddc6a" marker-end="url(#ag)"/>
+              <path d="M404 220 L468 240" stroke="#ffae2a" marker-end="url(#aa)"/>
+              <path d="M546 40 L602 62" stroke="#3ddc6a" marker-end="url(#ag)"/>
+              <path d="M546 180 C580 180 575 90 602 82" stroke="#3ddc6a" marker-end="url(#ag)"/>
+              <path d="M546 100 C580 100 575 190 602 198" stroke="#ffae2a" marker-end="url(#aa)"/>
+              <path d="M546 240 L602 218" stroke="#ffae2a" marker-end="url(#aa)"/>
+            </g>
+          </g>
+        </svg>
+        <figcaption>Three buses, four DACs, no CPU time on output. Green goes to the left ear, amber to the right: the same colours as the demo's oscilloscope.</figcaption>
+      </figure>
+
+      <h2>A frame is 311 lines, not 312</h2>
+      <p>At 50 Hz with the Next's 128K timing, a frame is 567,264 T at 28 MHz: <b>311 lines of 1,824 T</b>. It is easy to assume 312. A Copper list that does so waits for a line that never comes, and loses that line's sample every frame. It showed up as the stream sliding one place against the model (below). The engine counts the lines at start-up rather than assume, by following nextreg <code>$1E</code>/<code>$1F</code> to their highest value.</p>
+      <p>311 lines, 49.36 times a second, is <b>15,351 samples a second</b> for each of the three buses.</p>
+
+      <h2>Prescaler 57 is one line, exactly</h2>
+      <p>The DMA's rate is 875 kHz divided by its prescaler, and 875 kHz is the 28 MHz clock divided by 32. So prescaler 57 sends a byte every 57 &times; 32 = 1,824 T: <b>exactly one scan line</b>. The centre bus stays in step with the Copper's buses for ever, and every bus plays at the same 15,351 Hz.</p>
+
+      <h2>Two interrupts, two halves</h2>
+      <p>Two line interrupts a frame, at lines 0 and 156, split the frame into halves of 156 and 155 lines. Each one restarts the DMA on the centre half that is starting, then mixes the half that has just played and writes it into the Copper list. So the half being filled is never the half being played. The song ticks once a frame, at line 0.</p>
+      <p>Writing the list is unrolled: per line it sends six bytes with <code>out (c)</code> through nextreg <code>$60</code>: the WAIT, then each MOVE's register and value. Nextreg <code>$61</code>/<code>$62</code> point it at the right half without restarting the Copper.</p>
+
+      <h2>Eight voices in Z80N</h2>
+      <p>Each voice has a bus (centre, left or right), a volume from 1 to 31 and a pitch step in 8.8 fixed point, below 2.0. Samples are signed 8-bit at the line rate. A mix starts by clearing the three buses to <code>$80</code>, silence, two bytes at a <code>push</code>. Then each voice adds into its bus through its volume's table: 32 tables of 256 bytes, so scaling a sample is one <code>ld a, (bc)</code>.</p>
+      <ul>
+        <li><b>At its own pitch</b> (a step of exactly 1.0) a voice reads its sample with <code>pop</code>, two bytes at a time, with SP pointed into the sample: <b>34 T a sample</b>. The drums, the stabs at every pitch the song uses, the pads and the shouts all play this way.</li>
+        <li><b>Below its own pitch</b> it keeps the position's fraction in A', adds the step's fraction each sample, and moves on a byte when that carries: 64 T a sample. Above it, a byte more each time: 70 T.</li>
+        <li>The inner loops are unrolled for a whole half, and entered part-way for the number of lines.</li>
+      </ul>
+      <p>The engine's code lives in pages 60-61, which the interrupt maps into slots 6-7 while it runs and then puts back. A voice's sample page and the next go into slots 0-1 (a half can cross a page), and the volume tables into slot 3. Bank 2 holds only the entry points and what the demo reads. The sound takes <b>26% of the CPU on average, and 38.5% at the busiest bar</b>.</p>
+
+      <h2>The song</h2>
+      <p>The song is 80 bars at 123.4 BPM, 2 min 36 s, in C minor, up a tone to D minor at bar 56 and back for the end. Its sounds are synthesised by our own script: kick, snare, clap, hats, a bass, minor stabs, a lead, and looped string pads with loop lengths chosen to keep them in tune. The shouts were spoken by the Kokoro speech model, then trimmed, compressed and roughened.</p>
+      <p>It fits in one 8K page (6.3K): a table of 24 samples (start, end and loop, 3 bytes each), an order list with a pattern for each of 5 tracks in every bar, the patterns' addresses, then 121 patterns, one bar each. A pattern is a string of bytes:</p>
+      <ul>
+        <li><code>$00</code>: nothing more this bar. <code>$01</code>-<code>$7F</code>: wait that many frames.</li>
+        <li><code>$80</code>+voice: a note, then its sample, step, volume and bus. <code>$88</code>+voice: a new volume, 0 to stop (fades and swells). <code>$90</code>+voice: the voice's last note again.</li>
+      </ul>
+      <p>A bar is 96 frames. The song's frame counter tells the demo exactly where in the music it is.</p>
+
+      <h2>The demo shares the Copper list</h2>
+      <p>On 89 lines, Layer 2 rows 32 to 120, each line in the list gets one more MOVE, of a register and a value the demo chooses. Behind the logo it is nextreg <code>$4A</code>, the fallback colour, which shows through wherever Layer 2 is transparent: that paints the sky and the five <b>copper bars</b>. On the plasma it is <code>$16</code>, Layer 2's X scroll, which bends the top third into a <b>wobble</b>. The music and the picture come from the same list, so they move in exact step.</p>
+      <p>The oscilloscope is drawn from the very buffers being played: 156 dots a side, what each ear hears.</p>
+
+      <h2>Pictures that never move</h2>
+      <p>The demo keeps three full 320&times;256 screens in memory and never redraws them: the logo, the plasma and the tunnel. Nextreg <code>$12</code> picks which one Layer 2 shows. A switch takes effect at the next pixel, so each cut happens under a white flash. The plasma and the tunnel are pictures of palette numbers, and only their palettes move: the plasma turns a loop of 256 colours, and the tunnel steps through 64 palettes, 8 turns by 8 depths of an 8&times;8 texture.</p>
+      <p>Every frame all 256 colours go through one of 17 brightness tables, so fades, beat flashes and cut flashes are one number. With 32 stars, 48 bobs and 21 scroller letters as sprites on top, every part runs at the full frame rate: not one frame dropped over the whole song in JNEXT.</p>
+
+      <h2>How it was checked</h2>
+      <p>The script that makes the song also plays it through a Python model of the song player and the mixer, the same volume tables, steps and half-frame boundaries, and refuses a mix that would overflow a bus. JNEXT can log every DAC write with its T-state. Over the whole song and into its loop, with the demo running, <b>every byte</b> the Next wrote to the four DACs matched the model: 10,283,268 bytes, none different. The Copper's writes came 1,799 to 1,849 T apart, JNEXT's usual jitter around one 1,824 T line.</p>
+      <p>Then it was run and listened to in CSpect 3.3.1, which needed one change: CSpect stops when the Copper runs memory that hasn't been written, so the list is now written with the Copper stopped, then started. It played as it should. It has not yet been run on a real Next.</p>
+    </div>
+    <aside class="card numbers">
+      <h3>The numbers</h3>
+      <dl><dt>Machine</dt><dd>ZX Spectrum Next, 1MB, no Pi</dd><dt>Sound</dt><dd>15,351 Hz, three 8-bit buses: left, right and centre</dd><dt>Voices</dt><dd>8</dd><dt>The song</dt><dd>80 bars, 123.4 BPM, 2 min 36 s</dd><dt>The sound's cost</dt><dd>26% of the CPU on average, 38.5% at the busiest bar</dd><dt>Copper list</dt><dd>1,023 of 1,024 instructions</dd><dt>Samples</dt><dd>217K, in 28 pages</dd><dt>The demo</dt><dd>every frame, none dropped</dd><dt>Checked</dt><dd>10,283,268 DAC bytes, all as the model says</dd></dl>
+    </aside>
+  </div>
+</section>
+
+<section id="screens" class="wrap">
+  <p class="eyebrow">Screens</p>
+  <h2>As the emulator draws it</h2>
+  <p class="sub">Taken in JNEXT at moments in the song. Click a picture to see it bigger.</p>
+  <div class="gallery">
+    <a class="shot" href="../../shots/intro.png" data-caption="The intro: stars, then the logo, its tag line and the copper bars fade in."><img src="../../shots/intro.png" width="640" height="512" loading="lazy" alt="The chrome SOUNDS LAB logo over copper bars, its tag line, and stars on black"></a>
+    <a class="shot" href="../../shots/logo.png" data-caption="The first verse: the logo over copper bars, the oscilloscope of the bytes being played, and the sine scroller."><img src="../../shots/logo.png" width="640" height="512" loading="lazy" alt="The logo over copper bars, a green and amber oscilloscope, and a rainbow scroller"></a>
+    <a class="shot" href="../../shots/plasma.png" data-caption="The plasma: not one pixel moves, only the palette, and the Copper bends the top third. 48 bobs fly over it."><img src="../../shots/plasma.png" width="640" height="512" loading="lazy" alt="A green and blue plasma with dozens of shiny coloured bobs and a scroller along the bottom"></a>
+    <a class="shot" href="../../shots/breakdown.png" data-caption="The breakdown: the tunnel, dimmed and slow, with the bobs in a ring."><img src="../../shots/breakdown.png" width="640" height="512" loading="lazy" alt="A blue and purple chequered tunnel with a ring of coloured bobs"></a>
+    <a class="shot" href="../../shots/climax-tunnel.png" data-caption="The climax cuts every 4 bars. First the tunnel at full speed, with the wobble on its top third."><img src="../../shots/climax-tunnel.png" width="640" height="512" loading="lazy" alt="A bright chequered tunnel, its top part bent sideways, with bobs and a scroller"></a>
+    <a class="shot" href="../../shots/climax-plasma.png" data-caption="Then the plasma in new colours."><img src="../../shots/climax-plasma.png" width="640" height="512" loading="lazy" alt="An orange, white and blue plasma with bobs and a scroller"></a>
+    <a class="shot" href="../../shots/climax-logo.png" data-caption="Then the logo with the bobs behind it."><img src="../../shots/climax-logo.png" width="640" height="512" loading="lazy" alt="The chrome logo with dozens of bobs around it, the oscilloscope and the scroller"></a>
+    <a class="shot" href="../../shots/greetings.png" data-caption="The greetings scroll by near the end."><img src="../../shots/greetings.png" width="640" height="512" loading="lazy" alt="The logo, the oscilloscope and bobs, with greetings in the scroller"></a>
+  </div>
+</section>
+
+<section id="download" class="wrap">
+  <div class="card download">
+    <div>
+      <p class="eyebrow">Download</p>
+      <h2>Load it yourself</h2>
+      <p>For any ZX Spectrum Next with 1MB. The music starts as soon as it loads, and loops until you reset.</p>
+      <p class="meta"><code>sounds-lab.nex</code>, <!--v-->13 November 2026, 576 KB<!--/v--></p>
+      <div class="actions"><a class="btn" href="../../files/sounds-lab.nex" download>Download sounds-lab.nex</a></div>
+    </div>
+    <ol class="steps">
+      <li><b>On a Next:</b> copy <code>sounds-lab.nex</code> to the SD card, find it in the Browser and press ENTER. Not yet tried on a real Next: if you do, we would like to hear.</li>
+      <li><b>In CSpect</b> (with the Next's ROMs in its folder, as its readme says): <code>CSpect.exe -zxnext -s28 -w3 sounds-lab.nex</code>.</li>
+      <li><b>Turn the sound up.</b> It is on the quiet side.</li>
+      <li>Made and checked at 50 Hz. The song ticks once a frame, so at 60 Hz it would play faster.</li>
+    </ol>
+  </div>
+</section>
+
+<nav class="wrap pager" aria-label="Other pages">
+  <a href="../../">&larr; Next Sound Lab</a>
+  <a href="https://mikeynma.github.io/spectrum-sound-lab/">The Spectrum Sound Lab &rarr;</a>
+</nav>
+</main>
+
+<footer class="wrap foot">
+  <img src="../../icon.png" width="24" height="24" alt="">
+  <div>
+    <p>Next Sound Lab is a set of sound experiments for the ZX Spectrum Next, written in Z80N assembly. Made in the UK, by the maker of <a href="https://mikeynma.github.io/">games for the ZX Spectrum Next</a>, and the sister of the <a href="https://mikeynma.github.io/spectrum-sound-lab/">Spectrum Sound Lab</a> for the original Spectrum.</p>
+    <p class="small">Everything here is our own code, music, sounds and pictures. The shouted vocals were made with the Kokoro-82M speech model, under the Apache License 2.0. Text in Geist, under the SIL Open Font License.</p>
+  </div>
+</footer>
+<dialog class="lightbox" aria-label="Screenshot">
+  <figure><img alt=""><figcaption></figcaption></figure>
+  <button class="lb-btn lb-prev" type="button" aria-label="Previous picture">&lsaquo;</button>
+  <button class="lb-btn lb-next" type="button" aria-label="Next picture">&rsaquo;</button>
+  <button class="lb-btn lb-close" type="button" autofocus aria-label="Close">&times;</button>
+</dialog>
+<script src="../../site.js"></script>
+</body>
+</html>

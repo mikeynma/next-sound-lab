@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Next Sound Lab: sampled music for the ZX Spectrum Next</title>
+<meta name="description" content="Sampled music for the ZX Spectrum Next: eight voices mixed in Z80N and played by the Copper, one byte a scan line, with the DMA on two more DACs. An 80-bar song of our own and a 90s-style demo around it, at 50 frames a second.">
+<meta property="og:title" content="Next Sound Lab: sampled music for the ZX Spectrum Next">
+<meta property="og:description" content="Eight sampled voices mixed in Z80N and played by the Copper, one byte a scan line, with the DMA on two more DACs. An 80-bar song of our own and a 90s-style demo around it.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mikeynma.github.io/next-sound-lab/">
+<meta property="og:image" content="https://mikeynma.github.io/next-sound-lab/share.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Next Sound Lab: the chrome SOUNDS LAB logo over a plasma and shiny bobs, sampled music for the ZX Spectrum Next">
+<link rel="canonical" href="https://mikeynma.github.io/next-sound-lab/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mikeynma.github.io/next-sound-lab/share.png">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="favicon-32.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="fonts/geist-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="tape" aria-hidden="true"></div>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Next Sound Lab, the front page"><img src="icon.png" width="32" height="32" alt=""><span>Next Sound Lab</span></a>
+    <nav aria-label="Sections"><a href="#demos">The demo</a><a href="#loading">Playing it</a><a href="#news">What's new</a><a href="#about">About</a></nav>
+  </div>
+</header>
+
+<main>
+<section class="hero wrap">
+  <div class="hero-text">
+    <h1><img class="logo" src="logo.png" width="600" height="188" alt="Next Sound Lab"></h1>
+    <p class="lead">Music for the Next's DACs, played by the Copper.</p>
+    <p>Eight sampled voices, mixed in Z80N twice a frame. The Copper writes a byte to the left and right DACs on every scan line, and the DMA plays a centre channel on two more. That is 15,351 Hz stereo with no CPU time spent on output. It plays an 80-bar song of our own, under a 90s-style demo that runs at the full frame rate.</p>
+    <div class="actions">
+      <a class="btn" href="#demos">See the demo</a>
+      <a class="btn btn-ghost" href="demos/eight-voices/">How it works</a>
+    </div>
+  </div>
+  <figure class="hero-shot">
+    <a class="shot" href="shots/logo.png" data-caption="The chrome logo over copper bars drawn by the same Copper list that plays the music. Below it, an oscilloscope of the bytes being played: left in green, right in amber."><img src="shots/logo.png" width="640" height="512" alt="The chrome SOUNDS LAB logo over coloured copper bars, the tag line EIGHT VOICES - ONE COPPER - NO MERCY, a green and amber oscilloscope, and a rainbow scroller"></a>
+    <figcaption>The chrome logo over copper bars drawn by the same Copper list that plays the music. Below it, an oscilloscope of the bytes being played: left in green, right in amber.</figcaption>
+  </figure>
+</section>
+
+<section id="demos" class="wrap">
+  <p class="eyebrow">The demo</p>
+  <h2>Listen, then load it</h2>
+  <p class="sub">A recording to play here, the whole demo to watch, a <code>.nex</code> for a Next or an emulator, and a page on how it works.</p>
+  <div class="demos">
+    <article class="demo card">
+      <div class="demo-media"><video src="videos/eight-voices-loop.mp4" poster="shots/logo.png" width="640" height="512" autoplay muted loop playsinline preload="metadata" aria-label="Sixteen seconds of the demo, without sound: the chrome logo over copper bars, the oscilloscope and the scroller, then a white flash and the plasma with its bobs"></video></div>
+      <div class="demo-text">
+        <p class="badges"><span class="badge mnext">Next</span><span class="badge m1mb">1MB</span><span class="date">13 November 2026</span></p>
+        <h3><a href="demos/eight-voices/">Eight Voices, One Copper</a></h3>
+        <p>A song of our own in the late-80s hip-house style: 80 bars at 123.4 BPM, with synthesised drums, bass, stabs, strings and a lead, and shouted vocals. Around it runs a demo of stars, copper bars, an oscilloscope, a sine scroller, a plasma with 48 bobs and a tunnel, all following the music. The sound takes 26% of the CPU on average.</p>
+        <p class="listen"><small>the song once through, recorded from the emulated Next, 2 min 36 s</small><br><audio controls preload="none" style="width:100%;max-width:440px" src="audio/eight-voices.mp3"></audio></p>
+        <p class="links"><a class="btn btn-small" href="demos/eight-voices/">How it works</a><a class="btn btn-small btn-ghost" href="files/sounds-lab.nex" download>sounds-lab.nex</a><a class="btn btn-small btn-ghost" href="#watch">Watch it all</a></p>
+      </div>
+    </article>
+  </div>
+  <figure id="watch" class="card watch">
+    <video src="videos/eight-voices.mp4" poster="shots/intro.png" width="640" height="512" controls preload="none" playsinline aria-label="The whole demo with its sound, 2 minutes 37 seconds"></video>
+    <figcaption>The whole demo, with its sound, as the emulator JNEXT ran it: 2 min 37 s. Turn it up: it was recorded quietly and raised by 20 dB.</figcaption>
+  </figure>
+</section>
+
+<section id="loading" class="wrap">
+  <div class="card download">
+    <div>
+      <p class="eyebrow">Playing it</p>
+      <h2>Load the .nex</h2>
+      <p>One file. It runs on any ZX Spectrum Next with 1MB, and needs no Raspberry Pi. The music starts as soon as it loads, and loops until you reset.</p>
+      <p class="meta"><code>sounds-lab.nex</code>, <!--v-->13 November 2026, 576 KB<!--/v--></p>
+      <div class="actions"><a class="btn" href="files/sounds-lab.nex" download>Download the .nex</a></div>
+    </div>
+    <ol class="steps">
+      <li><b>On a Next:</b> copy <code>sounds-lab.nex</code> to the SD card, find it in the Browser and press ENTER. Not yet tried on a real Next: if you do, we would like to hear.</li>
+      <li><b>In CSpect</b> (with the Next's ROMs in its folder, as its readme says): <code>CSpect.exe -zxnext -s28 -w3 sounds-lab.nex</code>.</li>
+      <li><b>Turn the sound up.</b> It is on the quiet side.</li>
+      <li>Made and checked at 50 Hz. The song ticks once a frame, so at 60 Hz it would play faster.</li>
+    </ol>
+  </div>
+</section>
+
+<section id="news" class="wrap">
+  <p class="eyebrow">Changelog</p>
+  <h2>What's new</h2>
+  <div class="log card">
+    <ul>
+      <li><time datetime="2026-11-13">13 November 2026</time> <b>Eight Voices, One Copper:</b> <a href="demos/eight-voices/">the sample engine, an 80-bar song and a demo around it</a>. Eight voices played by the Copper and the DMA, checked byte for byte in JNEXT and heard in CSpect.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="about" class="wrap">
+  <p class="eyebrow">About</p>
+  <h2>How it's made</h2>
+  <div class="grid cards">
+    <article class="card"><h3>Our own engine, in Z80N</h3><p>The mixer, the song player and the demo are written from scratch in Z80N assembly. The song, its sounds and the demo's pictures are made by our own Python scripts.</p></article>
+    <article class="card"><h3>Checked byte for byte</h3><p>A Python model of the mixer plays the same song. Every byte the Next wrote to its DACs in the emulator JNEXT, 10,283,268 of them, matched it, over the whole song with the demo running.</p></article>
+    <article class="card"><h3>Then listened to, in CSpect</h3><p>A check can pass and still sound wrong, so the demo was also run in the CSpect emulator and listened to. It played as it should. It has not yet been heard on a real Next.</p></article>
+  </div>
+</section>
+</main>
+
+<footer class="wrap foot">
+  <img src="icon.png" width="24" height="24" alt="">
+  <div>
+    <p>Next Sound Lab is a set of sound experiments for the ZX Spectrum Next, written in Z80N assembly. Made in the UK, by the maker of <a href="https://mikeynma.github.io/">games for the ZX Spectrum Next</a>, and the sister of the <a href="https://mikeynma.github.io/spectrum-sound-lab/">Spectrum Sound Lab</a> for the original Spectrum.</p>
+    <p class="small">Everything here is our own code, music, sounds and pictures. The shouted vocals were made with the Kokoro-82M speech model, under the Apache License 2.0. Text in Geist, under the SIL Open Font License.</p>
+  </div>
+</footer>
+<dialog class="lightbox" aria-label="Screenshot">
+  <figure><img alt=""><figcaption></figcaption></figure>
+  <button class="lb-btn lb-prev" type="button" aria-label="Previous picture">&lsaquo;</button>
+  <button class="lb-btn lb-next" type="button" aria-label="Next picture">&rsaquo;</button>
+  <button class="lb-btn lb-close" type="button" autofocus aria-label="Close">&times;</button>
+</dialog>
+<script src="site.js"></script>
+</body>
+</html>
